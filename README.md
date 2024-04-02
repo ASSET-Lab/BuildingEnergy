@@ -12,6 +12,6 @@ From base folder (repostory folder) call the command python eprun_s.py script
 
 An example is ```python eprun_s.py --city Dallas --climate historical_1980-2020 --ep_install_path /Applications/OpenStudio-3.4.0/EnergyPlus --buildings_folder /Users/camilotoruno/Documents/local_research_data/Buildings --weather_folder /Volumes/seas-mtcraig/EPWFromTGW/TGWEPWs --output_folder /Users/camilotoruno/Documents/local_research_data/simulations --overwrite```
 
-## Development Hisotry
+## Development History
 See development commit history of this repostiory branch in the repository building_energy_modeling
 [here](https://github.com/camilotoruno/EnergyPlus-Python).
