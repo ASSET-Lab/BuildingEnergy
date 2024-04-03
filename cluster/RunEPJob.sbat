@@ -1,0 +1,26 @@
+#!/bin/bash
+
+#SBATCH --job-name=eppythonruns
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=4
+#SBATCH --ntasks-per-node=1
+#SBATCH --mem-per-cpu=32GB 
+#SBATCH --time=72:00:00
+#SBATCH --mail-type=END,FAIL
+#SBATCH --account=<account>
+#SBATCH --partition=standard
+
+# No package necessary beyond installation of EnergyPlus --> sourcing occurs in python script
+module load gcc
+
+# Set inputs to Python script --> Can be parametrized to be driven by a .sh script
+city="democity"
+year="1992"
+climate="historical"
+tld="/nfs/turbo/seas-mtcraig/arschall/pyEP"
+
+echo "Running: $city $year $climate $tld"
+
+python3 eprun_s.py -c $city -y $year -w $climate -d $tld
+
+exit
