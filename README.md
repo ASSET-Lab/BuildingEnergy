@@ -1,5 +1,5 @@
 # BuildingEnergy
-Python implementation of building energy modeling with ResStock building database and EnergyPlus simulation.
+Python implementation of building energy modeling with EnergyPlus.
 
 For usage, please observe the BuildingEnergy User Guide [available here](https://docs.google.com/document/d/1W8KQvduUNxGpCzpnTBveD2fUOOiJLDX1bbGHQGjDhyg/edit?usp=sharing).
 
