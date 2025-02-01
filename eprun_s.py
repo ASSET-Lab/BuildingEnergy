@@ -94,13 +94,27 @@ def generate_simulation_jobs(**kwargs):
         for job in tqdm.tqdm(jobs, total=len(jobs), desc="Checking output folders", smoothing=0.01):            # for loop inside progoress bar
             job.output_path = os.path.join(kwargs.get('output_folder'), climate, city, job.bldg_id, job.bldg_dir) 
 
+            output_file = os.path.join(job.output_path, 'eplusout.csv')
+            # print(os.path.exists(output_file))
             if not os.path.exists(job.output_path):
+                # print('case 1')
                 if kwargs.get('verbose'): print(f'Creating output directory {job.output_path}')
                 os.makedirs(job.output_path)  
                 run_jobs.append(job)
             
+            # output folder exists and we want to overwrite
             elif os.path.exists(job.output_path) and overwrite:
+                # print('case 2')
                 if kwargs.get('verbose'): print(f'\tWarning: Output files being overwritten: {job.output_path}')
+                shutil.rmtree(job.output_path)  
+                os.makedirs(job.output_path)  
+                run_jobs.append(job)
+
+            # output folder exists but the there's no results in the folder and we don't want to overwrite (so we still want to run the job)
+            elif os.path.exists(job.output_path) and not os.path.exists(output_file) and not overwrite:
+                # print(output_file)
+                # print(job.output_path )
+                # print('case 3')
                 shutil.rmtree(job.output_path)  
                 os.makedirs(job.output_path)  
                 run_jobs.append(job)
@@ -123,12 +137,13 @@ def run_job(job):
     api = EnergyPlusAPI()                           # Prepare api
     state = api.state_manager.new_state()
     if not job.verbose: api.runtime.set_console_output_status(state, False)
+    else: print(f"bldg_id: {job.bldg_id} \t output_path: {job.output_path}")
 
     v = api.runtime.run_energyplus(state, ['-d', job.output_path, '-w', job.epw_path, job.idf_path])        # Execute simulation 
 
     if v != 0:
-        print("EnergyPlus Simulation Failed")
-        sys.exit(1)
+        print(f'job.output_path: {job.output_path}')
+        raise RuntimeError(f'EnergyPlus Simulation Failed. See job.output_path: {job.output_path}')
 
     api.state_manager.delete_state(state)           # required to free up memory 
 
@@ -174,21 +189,3 @@ def run_energyplus_simulations(jobs, **kwargs):
     minutes = int((elapsed_time % 3600) // 60)
     seconds = int(elapsed_time % 60)
     print('\n-----EnergyPlus Simulation Summary-----\n\tSimulated ' + str(len(jobs)) + ' buildings \n' + f'\tExecution time: {hours:02d}hr:{minutes:02d}min:{seconds:02d}sec')
-
-
-if __name__ == "__main__":
-    # Parse input arguments if called from command line 
-    parser = argparse.ArgumentParser(description="Required eprun_s Arguments")
-
-    parser.add_argument('--city', '-c', help='city name (baltimore|boston|dallas|detroit|minneapolis|orlando|phoenix|seattle)', type=str, required=True)
-    parser.add_argument('--climate', '-w', help='climate scenario (historical|rcp45|rcp85)', type=str, required=True)
-    parser.add_argument('--ep_install_path', '-epp', help='location of the EnergyPlus install folder that has pyenergyplus', type=str, required=True)
-    parser.add_argument('--buildings_folder', '-bldgs_fldr', help='location of the buildings folder', type=str, required=True)
-    parser.add_argument('--weather_folder', '-wthr_fldr', help="Location of the weather scenarios", type=str, required=True)
-    parser.add_argument('--output_folder', '-o_fldr', help="Output folder", type=str, required=True)
-    parser.add_argument('--overwrite_output', '-overwrite', action='store_true', default=False, help="Overwrite existing output")
-    parser.add_argument('--verbose', '-v', action='store_true', default=False, help="Verbose output")
-
-    args = parser.parse_args()
-
-    run_energyplus_simulations(**vars(args))
